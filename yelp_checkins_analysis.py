@@ -7,7 +7,6 @@ import os
 import warnings
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 import statsmodels.api as sm
@@ -125,12 +124,10 @@ def prepare_data(
 
     df["region"] = df["state"].apply(map_region)
     df = df[df["region"].isin(["West", "Middle", "East"])].copy()
-
     df = df[(df["total_hours_per_week"] > 0) & (df["checkins"] >= 0)].copy()
 
     df["hours_stars"] = df["total_hours_per_week"] * df["stars"]
     df["hours_reviews"] = df["total_hours_per_week"] * df["review_count"]
-
     df["region"] = pd.Categorical(df["region"], categories=["West", "Middle", "East"])
 
     return df
@@ -176,7 +173,7 @@ def plot_hours_vs_checkins(df: pd.DataFrame) -> None:
 # -----------------------------
 # Models
 # -----------------------------
-def fit_models(df: pd.DataFrame):
+def fit_models(df: pd.DataFrame) -> tuple:
     formula_1 = "checkins ~ total_hours_per_week"
 
     formula_2 = """
