@@ -1,36 +1,44 @@
-import warnings
-warnings.filterwarnings("ignore")
+"""
+Yelp Check-Ins Analysis
+Marketplace Analytics · Count Modeling · Business Operations
+"""
 
+import os
+import warnings
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
 
-# ----------------------------
-# 1. Load data
-# ----------------------------
-business = pd.read_csv("yelp_business.csv")
-business_hours = pd.read_csv("yelp_business_hours.csv")
-checkin_raw = pd.read_csv("yelp_checkin.csv")
+warnings.filterwarnings("ignore")
+
+# -----------------------------
+# Config
+# -----------------------------
+BUSINESS_PATH = "yelp_business.csv"
+HOURS_PATH = "yelp_business_hours.csv"
+CHECKIN_PATH = "yelp_checkin.csv"
+PLOTS_DIR = "plots"
 
 sns.set_theme(style="whitegrid")
+plt.rcParams["figure.figsize"] = (10, 6)
 
-# ----------------------------
-# 2. Summarize check-ins
-# ----------------------------
-# If the file is already aggregated to one row per business, this still works
-checkin_summary = (
-    checkin_raw.groupby("business_id", as_index=False)["checkins"]
-    .sum()
-)
 
-# ----------------------------
-# 3. Convert business hours to total weekly hours
-# ----------------------------
+# -----------------------------
+# Helpers
+# -----------------------------
+def save_plot(filename: str) -> None:
+    plt.tight_layout()
+    plt.savefig(os.path.join(PLOTS_DIR, filename), dpi=300, bbox_inches="tight")
+    plt.close()
+
+
 def calculate_hours(time_range: str) -> float:
     if pd.isna(time_range) or str(time_range).strip().lower() in {"none", "", "nan"}:
         return 0.0
+
     try:
         open_time, close_time = str(time_range).split("-")
         open_hour, open_minute = map(int, open_time.split(":"))
@@ -39,7 +47,6 @@ def calculate_hours(time_range: str) -> float:
         open_total = open_hour * 60 + open_minute
         close_total = close_hour * 60 + close_minute
 
-        # handle overnight closing
         if close_total < open_total:
             close_total += 24 * 60
 
@@ -47,69 +54,15 @@ def calculate_hours(time_range: str) -> float:
     except Exception:
         return 0.0
 
-days_of_week = [
-    "monday", "tuesday", "wednesday",
-    "thursday", "friday", "saturday", "sunday"
-]
-
-for day in days_of_week:
-    business_hours[day] = business_hours[day].apply(calculate_hours)
-
-business_hours["total_hours_per_week"] = business_hours[days_of_week].sum(axis=1)
-
-# keep only needed columns from hours table
-business_hours_summary = business_hours[["business_id", "total_hours_per_week"]].copy()
-
-# ----------------------------
-# 4. Merge data
-# ----------------------------
-df = business.merge(business_hours_summary, on="business_id", how="left")
-df = df.merge(checkin_summary, on="business_id", how="left")
-
-# ----------------------------
-# 5. Clean only relevant columns
-# ----------------------------
-# Do NOT fill every column in the whole dataframe with 0
-df["checkins"] = df["checkins"].fillna(0)
-df["total_hours_per_week"] = df["total_hours_per_week"].fillna(0)
-
-# expected business fields in Yelp dataset
-for col in ["stars", "review_count"]:
-    if col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors="coerce")
-
-df["stars"] = df["stars"].fillna(df["stars"].median())
-df["review_count"] = df["review_count"].fillna(0)
-
-# ----------------------------
-# 6. Filter usable observations
-# ----------------------------
-# mirrors your project logic: exclude zero-hour businesses
-# keep nonnegative check-ins
-df = df[
-    (df["total_hours_per_week"] > 0) &
-    (df["checkins"] >= 0)
-].copy()
-
-# ----------------------------
-# 7. Feature engineering
-# ----------------------------
-# Restaurant flag
-if "categories" in df.columns:
-    df["categories"] = df["categories"].fillna("")
-    df["is_restaurant"] = df["categories"].str.contains("Restaurant", case=False, na=False).astype(int)
-else:
-    df["is_restaurant"] = 0
-
-# Region mapping
-# IMPORTANT: adjust this mapping if your class used a different one
-west_states = {"AZ", "NV", "CA", "WA", "OR", "HI", "AK"}
-middle_states = {"OH", "WI", "IL", "MI", "IN", "MN", "MO", "IA", "KS", "NE", "ND", "SD"}
-east_states = {"PA", "NC", "SC", "NY", "NJ", "MA", "FL", "GA", "VA", "MD", "DC", "DE", "CT", "RI", "VT", "NH", "ME"}
-canada_east = {"ON", "QC"}
 
 def map_region(state: str) -> str:
     state = str(state).strip().upper()
+
+    west_states = {"AZ", "NV", "CA", "WA", "OR", "HI", "AK"}
+    middle_states = {"OH", "WI", "IL", "MI", "IN", "MN", "MO", "IA", "KS", "NE", "ND", "SD"}
+    east_states = {"PA", "NC", "SC", "NY", "NJ", "MA", "FL", "GA", "VA", "MD", "DC", "DE", "CT", "RI", "VT", "NH", "ME"}
+    canada_east = {"ON", "QC"}
+
     if state in west_states:
         return "West"
     if state in middle_states:
@@ -118,144 +71,209 @@ def map_region(state: str) -> str:
         return "East"
     return "Other"
 
-df["region"] = df["state"].apply(map_region)
 
-# drop "Other" so final model matches your West / Middle / East framing more closely
-df = df[df["region"].isin(["West", "Middle", "East"])].copy()
+# -----------------------------
+# Load and prepare data
+# -----------------------------
+def load_data() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    business = pd.read_csv(BUSINESS_PATH)
+    business_hours = pd.read_csv(HOURS_PATH)
+    checkin = pd.read_csv(CHECKIN_PATH)
+    return business, business_hours, checkin
 
-# Set West as baseline
-df["region"] = pd.Categorical(df["region"], categories=["West", "Middle", "East"])
 
-# interaction terms
-df["hours_stars"] = df["total_hours_per_week"] * df["stars"]
-df["hours_reviews"] = df["total_hours_per_week"] * df["review_count"]
+def prepare_data(
+    business: pd.DataFrame,
+    business_hours: pd.DataFrame,
+    checkin: pd.DataFrame,
+) -> pd.DataFrame:
+    days_of_week = [
+        "monday", "tuesday", "wednesday",
+        "thursday", "friday", "saturday", "sunday"
+    ]
 
-# optional: keep reviews on a smaller scale for stability
-# comment out if you want raw review_count
-# df["review_count"] = df["review_count"] / 100
-# df["hours_reviews"] = df["total_hours_per_week"] * df["review_count"]
+    for day in days_of_week:
+        business_hours[day] = business_hours[day].apply(calculate_hours)
 
-# ----------------------------
-# 8. EDA visuals used in slides
-# ----------------------------
-plt.figure(figsize=(10, 5))
-sns.histplot(df["total_hours_per_week"], bins=60, color="salmon")
-plt.title("Frequency Distribution of Total Hours Per Week")
-plt.xlabel("Total Hours Per Week")
-plt.ylabel("Frequency")
-plt.tight_layout()
-plt.show()
+    business_hours["total_hours_per_week"] = business_hours[days_of_week].sum(axis=1)
+    business_hours = business_hours[["business_id", "total_hours_per_week"]].copy()
 
-plt.figure(figsize=(10, 5))
-sns.histplot(df["checkins"], bins=80, color="steelblue")
-plt.title("Frequency Distribution of Check-Ins")
-plt.xlabel("Check-Ins")
-plt.ylabel("Frequency")
-plt.xlim(0, min(300, df["checkins"].max()))
-plt.tight_layout()
-plt.show()
+    checkin_summary = (
+        checkin.groupby("business_id", as_index=False)["checkins"]
+        .sum()
+    )
 
-# ----------------------------
-# 9. Model 1: simple Negative Binomial
-# ----------------------------
-formula_simple = "checkins ~ total_hours_per_week"
+    df = business.merge(business_hours, on="business_id", how="left")
+    df = df.merge(checkin_summary, on="business_id", how="left")
 
-model_simple = sm.GLM.from_formula(
-    formula=formula_simple,
-    data=df,
-    family=sm.families.NegativeBinomial()
-).fit()
+    df["total_hours_per_week"] = df["total_hours_per_week"].fillna(0)
+    df["checkins"] = df["checkins"].fillna(0)
 
-print("\n=== SIMPLE NEGATIVE BINOMIAL MODEL ===")
-print(model_simple.summary())
+    if "stars" in df.columns:
+        df["stars"] = pd.to_numeric(df["stars"], errors="coerce")
+        df["stars"] = df["stars"].fillna(df["stars"].median())
 
-# ----------------------------
-# 10. Model 2: controls added
-# ----------------------------
-formula_controls = """
-checkins ~ total_hours_per_week + stars + review_count + is_restaurant + C(region)
-"""
+    if "review_count" in df.columns:
+        df["review_count"] = pd.to_numeric(df["review_count"], errors="coerce")
+        df["review_count"] = df["review_count"].fillna(0)
 
-model_controls = sm.GLM.from_formula(
-    formula=formula_controls,
-    data=df,
-    family=sm.families.NegativeBinomial()
-).fit()
+    if "categories" in df.columns:
+        df["categories"] = df["categories"].fillna("")
+        df["is_restaurant"] = df["categories"].str.contains("Restaurant", case=False, na=False).astype(int)
+    else:
+        df["is_restaurant"] = 0
 
-print("\n=== NEGATIVE BINOMIAL MODEL WITH CONTROLS ===")
-print(model_controls.summary())
+    df["region"] = df["state"].apply(map_region)
+    df = df[df["region"].isin(["West", "Middle", "East"])].copy()
 
-# ----------------------------
-# 11. Model 3: final model with interactions
-# ----------------------------
-formula_final = """
-checkins ~ total_hours_per_week + stars + review_count + is_restaurant + C(region)
-         + hours_stars + hours_reviews
-"""
+    df = df[(df["total_hours_per_week"] > 0) & (df["checkins"] >= 0)].copy()
 
-model_final = sm.GLM.from_formula(
-    formula=formula_final,
-    data=df,
-    family=sm.families.NegativeBinomial()
-).fit()
+    df["hours_stars"] = df["total_hours_per_week"] * df["stars"]
+    df["hours_reviews"] = df["total_hours_per_week"] * df["review_count"]
 
-print("\n=== FINAL NEGATIVE BINOMIAL MODEL WITH INTERACTIONS ===")
-print(model_final.summary())
+    df["region"] = pd.Categorical(df["region"], categories=["West", "Middle", "East"])
 
-# ----------------------------
-# 12. Quick coefficient table
-# ----------------------------
-coef_table = pd.DataFrame({
-    "coefficient": model_final.params,
-    "p_value": model_final.pvalues,
-    "ci_lower": model_final.conf_int()[0],
-    "ci_upper": model_final.conf_int()[1]
-}).sort_index()
+    return df
 
-print("\n=== FINAL MODEL COEFFICIENT TABLE ===")
-print(coef_table)
 
-# ----------------------------
-# 13. Predicted vs observed plot
-# ----------------------------
-df["predicted_checkins"] = model_final.predict(df)
+# -----------------------------
+# Plot 1: Hours distribution
+# -----------------------------
+def plot_hours_distribution(df: pd.DataFrame) -> None:
+    plt.figure()
+    sns.histplot(df["total_hours_per_week"], bins=50)
+    plt.title("Distribution of Weekly Operating Hours")
+    plt.xlabel("Total Hours Per Week")
+    plt.ylabel("Frequency")
+    save_plot("hours_distribution.png")
 
-plt.figure(figsize=(8, 6))
-plt.scatter(
-    df["total_hours_per_week"],
-    df["checkins"],
-    alpha=0.25,
-    label="Observed"
-)
-plt.scatter(
-    df["total_hours_per_week"],
-    df["predicted_checkins"],
-    alpha=0.25,
-    label="Predicted"
-)
-plt.xlabel("Total Hours Per Week")
-plt.ylabel("Check-Ins")
-plt.title("Negative Binomial Regression: Predicted vs Observed Check-Ins")
-plt.legend()
-plt.tight_layout()
-plt.show()
 
-# ----------------------------
-# 14. Pull final numbers for portfolio / slides
-# ----------------------------
-hours_coef = model_final.params.get("total_hours_per_week", np.nan)
-hours_p = model_final.pvalues.get("total_hours_per_week", np.nan)
+# -----------------------------
+# Plot 2: Check-ins distribution
+# -----------------------------
+def plot_checkins_distribution(df: pd.DataFrame) -> None:
+    plt.figure()
+    sns.histplot(df["checkins"], bins=60)
+    plt.title("Distribution of Yelp Check-Ins")
+    plt.xlabel("Check-Ins")
+    plt.ylabel("Frequency")
+    plt.xlim(0, min(300, int(df["checkins"].max())))
+    save_plot("checkins_distribution.png")
 
-print("\n=== FINAL TAKEAWAY ===")
-print(f"Coefficient for total_hours_per_week: {hours_coef:.4f}")
-print(f"P-value for total_hours_per_week: {hours_p:.6g}")
 
-if hours_p < 0.05:
-    print("Operating hours are statistically significant in the final model.")
-else:
-    print("Operating hours are NOT statistically significant in the final model.")
+# -----------------------------
+# Plot 3: Hours vs check-ins
+# -----------------------------
+def plot_hours_vs_checkins(df: pd.DataFrame) -> None:
+    plt.figure()
+    plt.scatter(df["total_hours_per_week"], df["checkins"], alpha=0.2)
+    plt.title("Operating Hours vs Check-Ins")
+    plt.xlabel("Total Hours Per Week")
+    plt.ylabel("Check-Ins")
+    save_plot("hours_vs_checkins.png")
 
-print(
-    "Interpretation: the effect is positive if the coefficient is above 0, "
-    "but practical impact is small if the coefficient is close to zero."
-)
+
+# -----------------------------
+# Models
+# -----------------------------
+def fit_models(df: pd.DataFrame):
+    formula_1 = "checkins ~ total_hours_per_week"
+
+    formula_2 = """
+    checkins ~ total_hours_per_week + stars + review_count + is_restaurant + C(region)
+    """
+
+    formula_3 = """
+    checkins ~ total_hours_per_week + stars + review_count + is_restaurant + C(region)
+             + hours_stars + hours_reviews
+    """
+
+    model_1 = sm.GLM.from_formula(
+        formula=formula_1,
+        data=df,
+        family=sm.families.NegativeBinomial()
+    ).fit()
+
+    model_2 = sm.GLM.from_formula(
+        formula=formula_2,
+        data=df,
+        family=sm.families.NegativeBinomial()
+    ).fit()
+
+    model_3 = sm.GLM.from_formula(
+        formula=formula_3,
+        data=df,
+        family=sm.families.NegativeBinomial()
+    ).fit()
+
+    print("\nModel 1 Summary")
+    print(model_1.summary())
+
+    print("\nModel 2 Summary")
+    print(model_2.summary())
+
+    print("\nModel 3 Summary")
+    print(model_3.summary())
+
+    return model_1, model_2, model_3
+
+
+# -----------------------------
+# Plot 4: Final model fit
+# -----------------------------
+def plot_model_fit(df: pd.DataFrame, model) -> None:
+    fitted = model.predict(df)
+
+    plt.figure()
+    plt.scatter(df["total_hours_per_week"], df["checkins"], alpha=0.2, label="Observed")
+    plt.scatter(df["total_hours_per_week"], fitted, alpha=0.2, label="Predicted")
+    plt.title("Negative Binomial Model Fit")
+    plt.xlabel("Total Hours Per Week")
+    plt.ylabel("Check-Ins")
+    plt.legend()
+    save_plot("nb_model_fit.png")
+
+
+# -----------------------------
+# Plot 5: Region comparison
+# -----------------------------
+def plot_region_comparison(df: pd.DataFrame) -> None:
+    summary = (
+        df.groupby("region", observed=False)["checkins"]
+        .mean()
+        .reset_index()
+    )
+
+    plt.figure()
+    sns.barplot(data=summary, x="region", y="checkins")
+    plt.title("Average Check-Ins by Region")
+    plt.xlabel("Region")
+    plt.ylabel("Average Check-Ins")
+    save_plot("region_comparison.png")
+
+
+# -----------------------------
+# Run analysis
+# -----------------------------
+def main() -> None:
+    os.makedirs(PLOTS_DIR, exist_ok=True)
+
+    business, business_hours, checkin = load_data()
+    df = prepare_data(business, business_hours, checkin)
+
+    print("Dataset shape:", df.shape)
+
+    plot_hours_distribution(df)
+    plot_checkins_distribution(df)
+    plot_hours_vs_checkins(df)
+
+    _, _, final_model = fit_models(df)
+
+    plot_model_fit(df, final_model)
+    plot_region_comparison(df)
+
+    print("\nDone. Plots saved to:", PLOTS_DIR)
+
+
+if __name__ == "__main__":
+    main()
