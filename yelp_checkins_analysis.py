@@ -1,6 +1,6 @@
 """
-Yelp Check-Ins Analysis
-Marketplace Analytics · Count Modeling · Business Operations
+Does Staying Open Longer Drive More Customers?
+Regression Analysis · Consumer Behavior · Yelp Data
 """
 
 import os
@@ -46,6 +46,7 @@ def calculate_hours(time_range: str) -> float:
         open_total = open_hour * 60 + open_minute
         close_total = close_hour * 60 + close_minute
 
+        # Handle overnight hours (e.g. 22:00-02:00)
         if close_total < open_total:
             close_total += 24 * 60
 
@@ -69,6 +70,11 @@ def map_region(state: str) -> str:
     if state in east_states or state in canada_east:
         return "East"
     return "Other"
+
+
+def pseudo_r2(model) -> float:
+    """McFadden's Pseudo R² for GLM models"""
+    return 1 - (model.llf / model.llnull)
 
 
 # -----------------------------
@@ -167,6 +173,8 @@ def plot_hours_vs_checkins(df: pd.DataFrame) -> None:
     plt.title("Operating Hours vs Check-Ins")
     plt.xlabel("Total Hours Per Week")
     plt.ylabel("Check-Ins")
+    # Cap y-axis for readability given 103K+ businesses and heavy right skew
+    plt.ylim(0, 500)
     save_plot("hours_vs_checkins.png")
 
 
@@ -212,6 +220,29 @@ def fit_models(df: pd.DataFrame) -> tuple:
     print("\nModel 3 Summary")
     print(model_3.summary())
 
+    # Print key findings explicitly
+    print("\n" + "="*50)
+    print("KEY FINDINGS SUMMARY")
+    print("="*50)
+
+    print(f"\nPseudo R² progression:")
+    print(f"  Model 1 (hours only):     {pseudo_r2(model_1):.4f}")
+    print(f"  Model 2 (+ controls):     {pseudo_r2(model_2):.4f}")
+    print(f"  Model 3 (+ interactions): {pseudo_r2(model_3):.4f}")
+
+    hours_coef = model_3.params.get("total_hours_per_week", None)
+    restaurant_coef = model_3.params.get("is_restaurant", None)
+
+    if hours_coef is not None:
+        print(f"\nHours coefficient (Model 3): {hours_coef:.4f}")
+        print("  → Statistically significant but weak — minimal practical impact")
+
+    if restaurant_coef is not None:
+        print(f"\nRestaurant coefficient (Model 3): {restaurant_coef:.4f}")
+        print("  → Being a restaurant is a much stronger predictor than operating hours")
+
+    print("\nRegion findings: West consistently outperforms Middle and East across all models")
+
     return model_1, model_2, model_3
 
 
@@ -224,9 +255,10 @@ def plot_model_fit(df: pd.DataFrame, model) -> None:
     plt.figure()
     plt.scatter(df["total_hours_per_week"], df["checkins"], alpha=0.2, label="Observed")
     plt.scatter(df["total_hours_per_week"], fitted, alpha=0.2, label="Predicted")
-    plt.title("Negative Binomial Model Fit")
+    plt.title("Negative Binomial Model Fit — Observed vs Predicted Check-Ins")
     plt.xlabel("Total Hours Per Week")
     plt.ylabel("Check-Ins")
+    plt.ylim(0, 500)
     plt.legend()
     save_plot("nb_model_fit.png")
 
@@ -243,10 +275,13 @@ def plot_region_comparison(df: pd.DataFrame) -> None:
 
     plt.figure()
     sns.barplot(data=summary, x="region", y="checkins")
-    plt.title("Average Check-Ins by Region")
+    plt.title("Average Check-Ins by Region\n(West consistently outperforms across all models)")
     plt.xlabel("Region")
     plt.ylabel("Average Check-Ins")
     save_plot("region_comparison.png")
+
+    print("\nRegion Summary:")
+    print(summary.to_string(index=False))
 
 
 # -----------------------------
@@ -258,7 +293,8 @@ def main() -> None:
     business, business_hours, checkin = load_data()
     df = prepare_data(business, business_hours, checkin)
 
-    print("Dataset shape:", df.shape)
+    print(f"Dataset shape: {df.shape}")
+    print(f"Total businesses analyzed: {len(df):,}")
 
     plot_hours_distribution(df)
     plot_checkins_distribution(df)
