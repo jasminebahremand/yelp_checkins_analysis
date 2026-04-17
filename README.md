@@ -28,15 +28,15 @@ Python · Pandas · Statsmodels · Matplotlib · Seaborn
 ## Key Visual Insights
 
 ### Distribution of Weekly Operating Hours
-![Operating Hours Distribution](plots/distribution_weekly_operating_hours.jpg)
+![Operating Hours Distribution](plots/hours_distribution.png)
 Most businesses cluster between 40–100 weekly hours, with the distribution peaking around 50 hours. Very few operate at extremes, which informed the decision to model hours as a continuous predictor rather than a categorical one.
 
 ### Distribution of Yelp Check-Ins
-![Check-Ins Distribution](plots/distribution_yelp_checkins.jpg)
+![Check-Ins Distribution](plots/checkins_distribution.png)
 Check-ins are heavily right-skewed — the vast majority of businesses receive under 50 check-ins while a small number capture tens of thousands. This overdispersion is exactly why Negative Binomial Regression was chosen over standard OLS.
 
 ### Operating Hours vs. Check-Ins
-![Hours vs Check-Ins](plots/operating_hours_vs_checkins.jpg)
+![Hours vs Check-Ins](plots/hours_vs_checkins.png)
 The scatter shows a positive but non-linear relationship between hours and check-ins, with high-checkin outliers concentrated around 75–100 weekly hours. The flat baseline confirms hours alone explain very little variance — context factors dominate.
 
 ## How to Run
