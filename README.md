@@ -29,16 +29,16 @@ Python · Pandas · Statsmodels · Matplotlib · Seaborn
 ## Key Visual Insights
 
 ### Distribution of Weekly Operating Hours
-![Hours Distribution](plots/ hours_distribution.png)
-Business operating hours vary widely, with most businesses concentrated in mid-range weekly hours.
+![Hours Distribution](plots/hours_distribution.png)
+Most businesses operate within a mid-range of weekly hours, with fewer operating at very low or very high extremes.
 
 ### Distribution of Yelp Check-Ins
-![Check-Ins Distribution](plots/ checkins_distribution.png)
+![Check-Ins Distribution](plots/checkins_distribution.png)
 Check-ins are highly skewed, with a small number of businesses capturing a disproportionate share of customer activity.
 
 ### Operating Hours vs. Check-Ins
 ![Hours vs Check-Ins](plots/hours_vs_checkins.png)
-Operating hours show a positive but non-linear relationship with check-ins, supporting the use of count-based models (Negative Binomial) over linear regression.
+Operating hours show a positive but non-linear relationship with check-ins, supporting the use of count-based models (Negative Binomial).
 
 ## How to Run
 ```bash
