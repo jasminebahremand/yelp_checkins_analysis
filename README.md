@@ -4,7 +4,7 @@
 ## Overview
 Modeled Yelp check-ins across 103,907 businesses to evaluate whether operating hours meaningfully impact customer engagement, controlling for region, business type, star rating, and review count.
 
-> Full write-up available at [portfolio URL]
+> Full write-up coming soon
 
 ## Methods
 - Data merging and feature engineering
@@ -28,16 +28,16 @@ Python · Pandas · Statsmodels · Matplotlib · Seaborn
 ## Key Visual Insights
 
 ### Distribution of Weekly Operating Hours
-![Hours Distribution](plots/hours_distribution.png)
-Most businesses operate within a mid-range of weekly hours, with fewer operating at very low or very high extremes.
+![Operating Hours Distribution](plots/distribution_weekly_operating_hours.jpg)
+Most businesses cluster between 40–100 weekly hours, with the distribution peaking around 50 hours. Very few operate at extremes, which informed the decision to model hours as a continuous predictor rather than a categorical one.
 
 ### Distribution of Yelp Check-Ins
-![Check-Ins Distribution](plots/checkins_distribution.png)
-Check-ins are highly skewed, with a small number of businesses capturing a disproportionate share of customer activity.
+![Check-Ins Distribution](plots/distribution_yelp_checkins.jpg)
+Check-ins are heavily right-skewed — the vast majority of businesses receive under 50 check-ins while a small number capture tens of thousands. This overdispersion is exactly why Negative Binomial Regression was chosen over standard OLS.
 
 ### Operating Hours vs. Check-Ins
-![Hours vs Check-Ins](plots/hours_vs_checkins.png)
-Operating hours show a positive but non-linear relationship with check-ins, supporting the use of count-based models (Negative Binomial).
+![Hours vs Check-Ins](plots/operating_hours_vs_checkins.jpg)
+The scatter shows a positive but non-linear relationship between hours and check-ins, with high-checkin outliers concentrated around 75–100 weekly hours. The flat baseline confirms hours alone explain very little variance — context factors dominate.
 
 ## How to Run
 ```bash
@@ -45,5 +45,4 @@ pip install -r requirements.txt
 python yelp_checkins_analysis.py
 ```
 
-## Data
-Dataset: [Yelp Open Dataset](https://www.yelp.com/dataset)
+> Dataset: Yelp Open Dataset
