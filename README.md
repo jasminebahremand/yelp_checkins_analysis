@@ -25,7 +25,6 @@ Python · Pandas · Statsmodels · Matplotlib · Seaborn
 - `yelp_checkins_analysis.py` — main analysis script
 - `requirements.txt` — project dependencies
 
-## Plots
 ## Key Visual Insights
 
 ### Distribution of Weekly Operating Hours
