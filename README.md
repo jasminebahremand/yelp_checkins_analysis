@@ -18,6 +18,8 @@ This project analyzes Yelp check-in data across 103,907 businesses to test wheth
 - **Being a restaurant was the strongest predictor** (β=0.6352) — business type matters more than hours
 - **Western region businesses outperformed** East and Midwest across all models
 
+The practical takeaway: if a business wants more foot traffic, staying open later is the least efficient lever available.
+
 ---
 
 ## Key Visuals
@@ -28,10 +30,10 @@ This project analyzes Yelp check-in data across 103,907 businesses to test wheth
 ### Longer Operating Hours Do Not Strongly Increase Customer Traffic
 ![Hours vs Check-Ins](plots/hours_vs_checkins.png)
 
-### Why Standard Regression Doesn't Work Here
+### Check-In Volume Is Highly Skewed — Why Negative Binomial Over OLS
 ![Check-Ins Distribution](plots/checkins_distribution.png)
 
-Check-ins are highly skewed — a small number of businesses capture a disproportionate share of traffic. This overdispersion is why Negative Binomial Regression was used instead of OLS.
+Check-ins are heavily concentrated among a small number of businesses. This overdispersion makes OLS regression unsuitable — Negative Binomial Regression handles count data with this kind of skew correctly.
 
 ---
 
@@ -52,7 +54,7 @@ Python · Pandas · Statsmodels · Matplotlib · Seaborn
 
 ```bash
 pip install -r requirements.txt
-python yelp_checkins_analysis.py
+jupyter notebook yelp_checkins_analysis.ipynb
 ```
 
 ---
@@ -72,4 +74,5 @@ Download and place the following in your working directory:
 
 ## Files
 - `yelp_checkins_analysis.ipynb` — full analysis notebook
+- `requirements.txt` — dependencies
 - `plots/` — generated visualizations
