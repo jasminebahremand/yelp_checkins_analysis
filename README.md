@@ -27,8 +27,12 @@ The practical takeaway: if a business wants more foot traffic, staying open late
 ### Customer Traffic Varies More by Region Than by Hours
 ![Region Comparison](plots/region_comparison.png)
 
+Western region businesses consistently outperform East and Midwest — regional differences the model explains far better than operating hours alone.
+
 ### Longer Operating Hours Do Not Strongly Increase Customer Traffic
 ![Hours vs Check-Ins](plots/hours_vs_checkins.png)
+
+The relationship between hours and check-ins is positive but weak — the trend line is nearly flat, which motivated controlling for business type and region in subsequent models.
 
 ### Check-In Volume Is Highly Skewed — Why Negative Binomial Over OLS
 ![Check-Ins Distribution](plots/checkins_distribution.png)
