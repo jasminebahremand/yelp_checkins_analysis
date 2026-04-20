@@ -21,7 +21,6 @@ This project analyzes Yelp check-in data across 103,907 businesses to test wheth
 The practical takeaway: if a business wants more foot traffic, staying open later is the least efficient lever available.
 
 ---
-
 ## Key Visuals
 
 ### Customer Traffic Varies More by Region Than by Hours
@@ -38,6 +37,16 @@ The relationship between hours and check-ins is positive but weak — the trend 
 ![Check-Ins Distribution](plots/checkins_distribution.png)
 
 Check-ins are heavily concentrated among a small number of businesses. This overdispersion makes OLS regression unsuitable — Negative Binomial Regression handles count data with this kind of skew correctly.
+
+### Most Businesses Operate Within a Similar Weekly Hour Range
+![Hours Distribution](plots/hours_distribution.png)
+
+Operating hours cluster in a mid-range across most businesses — very few operate at the extremes, which limits the variation available to drive meaningful differences in check-in volume.
+
+### Model Captures Overall Trends but Not Exact Outcomes
+![Model Fit](plots/model_fit.png)
+
+The model predicts general patterns in check-in volume but cannot precisely predict individual business performance — unobserved factors like marketing spend and local competition also play a role.
 
 ---
 
