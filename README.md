@@ -65,23 +65,28 @@ Regional differences in performance are more pronounced than the effect of opera
 The model captures general patterns in customer traffic but cannot precisely predict individual business performance, reinforcing that unobserved factors also play a role.
 
 ---
+
 ## How to Run
 ```bash
 pip install -r requirements.txt
 python yelp_checkins_analysis.py
 
+
+---
+
 ## Data
 
-Yelp Open Dataset (Official Source):
-https://www.yelp.com/dataset
+**Yelp Open Dataset (Official Source):**  
+https://www.yelp.com/dataset  
 
-Kaggle Mirror (easier download):
-https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset
+**Kaggle Mirror (easier download):**  
+https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset  
 
-Expected Files
+### Expected Files
 
 Download the dataset and place the following files in your working directory:
-	•	yelp_academic_dataset_business.json
-	•	yelp_academic_dataset_checkin.json
 
-Note: Due to file size, the dataset is not included in this repository.
+- `yelp_academic_dataset_business.json`  
+- `yelp_academic_dataset_checkin.json`  
+
+> Note: Due to file size, the dataset is not included in this repository.
