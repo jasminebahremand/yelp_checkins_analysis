@@ -65,16 +65,12 @@ Regional differences in performance are more pronounced than the effect of opera
 The model captures general patterns in customer traffic but cannot precisely predict individual business performance, reinforcing that unobserved factors also play a role.
 
 ---
-
 ## How to Run
 ```bash
 pip install -r requirements.txt
 python yelp_checkins_analysis.py
 
-
----
-
-### Data
+## Data
 
 Yelp Open Dataset (Official Source):
 https://www.yelp.com/dataset
