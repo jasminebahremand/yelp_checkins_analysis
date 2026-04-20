@@ -1,91 +1,63 @@
-# Does Staying Open Longer Drive More Customers?
-**Regression Analysis · Consumer Behavior · Yelp Data**
+# Your Hours Aren't the Problem
+**Negative Binomial Regression · Yelp Open Dataset · 103,907 businesses**
+
+---
 
 ## Overview
-Analyzed Yelp business data to evaluate whether longer operating hours meaningfully increase customer traffic. Built a fully reproducible pipeline from raw JSON data to modeling, controlling for business type, region, ratings, and review volume.
+The assumption was simple: businesses that stay open longer get more customers. The data said otherwise.
+
+This project analyzes Yelp check-in data across 103,907 businesses to test whether operating hours meaningfully predict customer traffic. Built a fully reproducible pipeline from raw JSON to modeling, controlling for business type, region, ratings, and review volume.
+
+---
+
+## What I Found
+Operating hours have a statistically significant but weak effect on traffic. The real drivers are business type, review volume, and region — factors that longer hours cannot compensate for.
+
+Specifically:
+- Being a restaurant predicts traffic far more than any number of additional hours open
+- Western-region businesses consistently outperform other regions regardless of hours
+- Model fit jumped from Pseudo R²=0.21 to 0.88 after adding business context variables — hours alone explain almost nothing
+
+The practical takeaway: if a business wants more foot traffic, staying open later is the least efficient lever available.
 
 ---
 
 ## Methods
-- Data cleaning, merging, and feature engineering from raw Yelp dataset  
-- Exploratory Data Analysis (EDA)  
-- Negative Binomial Regression (chosen due to highly skewed count data)  
-- Model comparison across three specifications (baseline, controlled, interaction model)  
-
----
-
-## Key Findings
-- **Operating hours have a statistically significant but weak effect** on customer traffic — increasing hours alone does not meaningfully drive more visits  
-- **Model performance improves substantially after adding business context variables**, showing that factors like business type and reviews explain far more variation  
-- **Being a restaurant is a strong predictor of customer traffic**, outweighing the impact of operating hours  
-- **Regional differences are more important than hours**, with Western-region businesses consistently outperforming others  
+- Data cleaning, merging, and feature engineering from raw Yelp JSON
+- Exploratory Data Analysis
+- Negative Binomial Regression — chosen for highly skewed count data where OLS breaks down
+- Three model specifications: baseline, controlled, and interaction
 
 ---
 
 ## Tech Stack
-Python · Pandas · Statsmodels · Matplotlib · Seaborn  
+Python · Pandas · Statsmodels · Matplotlib · Seaborn
+
+---
+
+## How to Run
+
+```bash
+pip install -r requirements.txt
+python yelp_checkins_analysis.py
+```
+
+---
+
+## Data
+
+**Yelp Open Dataset:** https://www.yelp.com/dataset  
+**Kaggle Mirror:** https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset
+
+Download and place the following in your working directory:
+- `yelp_academic_dataset_business.json`
+- `yelp_academic_dataset_checkin.json`
+
+> Dataset not included in this repo due to file size.
 
 ---
 
 ## Files
-- `yelp_checkins_analysis.py` — main analysis script  
-- `requirements.txt` — project dependencies  
-- `plots/` — generated visualizations  
-
----
-
-## Key Visual Insights
-
-### Most Businesses Operate Within a Similar Weekly Hour Range
-![Operating Hours Distribution](plots/hours_distribution.png)  
-Most businesses cluster within a mid-range of weekly operating hours, with relatively few operating at very low or very high extremes.
-
----
-
-### Most Businesses Receive Low Customer Traffic
-![Check-Ins Distribution](plots/checkins_distribution.png)  
-Customer traffic is highly uneven — most businesses receive relatively few visits, while a small number capture a disproportionately large share.
-
----
-
-### Longer Operating Hours Do Not Strongly Increase Customer Traffic
-![Hours vs Check-Ins](plots/hours_vs_checkins.png)  
-While there is a slight positive relationship between hours and traffic, the effect is weak, indicating that simply staying open longer does not significantly increase customer visits.
-
----
-
-### Customer Traffic Varies More by Region Than by Hours
-![Region Comparison](plots/region_comparison.png)  
-Regional differences in performance are more pronounced than the effect of operating hours, highlighting the importance of location-based factors.
-
----
-
-### Model Captures Overall Trends but Not Exact Outcomes
-![Model Fit](plots/model_fit.png)  
-The model captures general patterns in customer traffic but cannot precisely predict individual business performance, reinforcing that unobserved factors also play a role.
-
----
-
-```markdown
-## How to Run
-```bash
-pip install -r requirements.txt
-python yelp_checkins_analysis.py
-
----
-## Data
-
-**Yelp Open Dataset (Official Source):**  
-https://www.yelp.com/dataset  
-
-**Kaggle Mirror (easier download):**  
-https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset  
-
-### Expected Files
-
-Download the dataset and place the following files in your working directory:
-
-- `yelp_academic_dataset_business.json`  
-- `yelp_academic_dataset_checkin.json`  
-
-> Note: Due to file size, the dataset is not included in this repository. 
+- `yelp_checkins_analysis.py` — main analysis script
+- `requirements.txt` — dependencies
+- `plots/` — generated visualizations
