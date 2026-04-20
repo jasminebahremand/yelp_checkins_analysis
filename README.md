@@ -72,7 +72,9 @@ pip install -r requirements.txt
 python yelp_checkins_analysis.py
 
 
-## Data
+---
+
+### Data
 
 Yelp Open Dataset (Official Source):
 https://www.yelp.com/dataset
