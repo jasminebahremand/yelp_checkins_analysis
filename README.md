@@ -69,8 +69,8 @@ The model captures general patterns in customer traffic but cannot precisely pre
 ```bash
 pip install -r requirements.txt
 python yelp_checkins_analysis.py
----
 
+---
 ## Data
 
 **Yelp Open Dataset (Official Source):**  
@@ -86,4 +86,4 @@ Download the dataset and place the following files in your working directory:
 - `yelp_academic_dataset_business.json`  
 - `yelp_academic_dataset_checkin.json`  
 
-> Note: Due to file size, the dataset is not included in this repository.
+> Note: Due to file size, the dataset is not included in this repository. 
