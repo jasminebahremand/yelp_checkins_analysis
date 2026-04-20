@@ -8,25 +8,47 @@ The assumption was simple: businesses that stay open longer get more customers. 
 
 This project analyzes Yelp check-in data across 103,907 businesses to test whether operating hours meaningfully predict customer traffic. Built a fully reproducible pipeline from raw JSON to modeling, controlling for business type, region, ratings, and review volume.
 
----
-
-## What I Found
-Operating hours have a statistically significant but weak effect on traffic. The real drivers are business type, review volume, and region — factors that longer hours cannot compensate for.
-
-Specifically:
-- Being a restaurant predicts traffic far more than any number of additional hours open
-- Western-region businesses consistently outperform other regions regardless of hours
-- Model fit jumped from Pseudo R²=0.21 to 0.88 after adding business context variables — hours alone explain almost nothing
-
-The practical takeaway: if a business wants more foot traffic, staying open later is the least efficient lever available.
+> Full write-up available at [portfolio URL]
 
 ---
 
 ## Methods
-- Data cleaning, merging, and feature engineering from raw Yelp JSON
+- Data merging and feature engineering from raw Yelp JSON
 - Exploratory Data Analysis
-- Negative Binomial Regression — chosen for highly skewed count data where OLS breaks down
-- Three model specifications: baseline, controlled, and interaction
+- Negative Binomial Regression — chosen over OLS due to count data overdispersion
+- Three iterative models: simple GLM, multiple GLM with controls, interaction term model
+
+---
+
+## Key Findings
+- **Operating hours had a statistically significant but weak effect** on check-ins (β=0.0146, p<.001)
+- **Adding controls improved model fit from 21% to 88%** (Pseudo R²: 0.21 → 0.88) — business type, region, and review count were far stronger drivers
+- **Being a restaurant was the strongest predictor** (β=0.6352) — business type matters more than hours
+- **Western region businesses outperformed** East and Midwest across all models
+
+---
+
+## Key Visual Insights
+
+### Distribution of Weekly Operating Hours
+![Operating Hours Distribution](plots/hours_distribution.png)
+
+Most businesses operate within a mid-range of weekly hours, with fewer operating at very low or very high extremes.
+
+### Distribution of Yelp Check-Ins
+![Check-Ins Distribution](plots/checkins_distribution.png)
+
+Check-ins are highly skewed — a small number of businesses capture a disproportionate share of customer activity.
+
+### Operating Hours vs. Check-Ins
+![Hours vs Check-Ins](plots/hours_vs_checkins.png)
+
+Operating hours show a positive but non-linear relationship with check-ins, supporting the use of count-based models.
+
+### Customer Traffic by Region
+![Region Comparison](plots/region_comparison.png)
+
+Regional differences in performance are more pronounced than the effect of operating hours.
 
 ---
 
