@@ -1,26 +1,27 @@
 # Your Hours Aren't the Problem
-**Negative Binomial Regression · Yelp Open Dataset · 103,907 businesses**
+**Negative Binomial Regression · Yelp Open Dataset · 106,250 businesses**
 
 ---
 
 ## Overview
 The assumption was simple: businesses that stay open longer get more customers. The data said otherwise.
 
-This project analyzes Yelp check-in data across 103,907 businesses to test whether operating hours meaningfully predict customer traffic. Built a fully reproducible pipeline from raw JSON to modeling, controlling for business type, region, ratings, and review volume.
+This project analyzes Yelp check-in data across 106,250 businesses to test whether operating hours meaningfully predict customer traffic. Built a fully reproducible pipeline from raw JSON to modeling, controlling for business type, region, ratings, and review volume.
 
 > Full write-up available at [portfolio URL]
 
 ---
 
 ## Key Findings
-- **Operating hours had a statistically significant but weak effect** on check-ins (β=0.0146, p<.001)
-- **Adding controls improved model fit from 21% to 88%** (Pseudo R²: 0.21 → 0.88) — business type, region, and review count were far stronger drivers
-- **Being a restaurant was the strongest predictor** (β=0.6352) — business type matters more than hours
-- **Western region businesses outperformed** East and Midwest across all models
+- **Operating hours had a statistically significant but weak effect** on check-ins (β=0.0135, p<.001)
+- **Adding controls improved model fit from 0.3% to 12.4%** (Pseudo R²: 0.003 → 0.124) — business type, region, and review count were far stronger drivers
+- **Being a restaurant was a significant predictor** (β=0.1774) — business type matters more than hours
+- **Western region businesses outperformed** East and Midwest across all models (mean check-ins: West 130.6 vs East 91.6)
 
 The practical takeaway: if a business wants more foot traffic, staying open later is the least efficient lever available.
 
 ---
+
 ## Key Visuals
 
 ### Customer Traffic Varies More by Region Than by Hours
