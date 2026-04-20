@@ -4,8 +4,6 @@
 ## Overview
 Analyzed Yelp business data to evaluate whether longer operating hours meaningfully increase customer traffic. Built a fully reproducible pipeline from raw JSON data to modeling, controlling for business type, region, ratings, and review volume.
 
-> Full write-up coming soon
-
 ---
 
 ## Methods
@@ -72,3 +70,20 @@ The model captures general patterns in customer traffic but cannot precisely pre
 ```bash
 pip install -r requirements.txt
 python yelp_checkins_analysis.py
+
+
+## Data
+
+Yelp Open Dataset (Official Source):
+https://www.yelp.com/dataset
+
+Kaggle Mirror (easier download):
+https://www.kaggle.com/datasets/yelp-dataset/yelp-dataset
+
+Expected Files
+
+Download the dataset and place the following files in your working directory:
+	•	yelp_academic_dataset_business.json
+	•	yelp_academic_dataset_checkin.json
+
+Note: Due to file size, the dataset is not included in this repository.
