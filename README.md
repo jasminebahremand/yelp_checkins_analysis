@@ -16,7 +16,7 @@ This project analyzes Yelp check-in data across 106,250 businesses to test wheth
 - **Operating hours had a statistically significant but weak effect** on check-ins (β=0.0135, p<.001)
 - **Adding controls improved model fit from 0.3% to 12.35%** (Pseudo R²: 0.003 → 0.123) — business type, region, and review count were far stronger drivers
 - **Being a restaurant was a significant predictor** (β=0.1774) — business type matters more than hours
-- **Western region businesses outperformed** East and Midwest had the highest average check-ins (mean check-ins: West 130.6 vs East 91.6)
+- **Western region businesses had the highest average check-ins** (mean check-ins: West 130.6 vs East 91.6)
 
 The practical takeaway: if a business wants more foot traffic, staying open later is the least efficient lever available.
 
