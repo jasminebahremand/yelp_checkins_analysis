@@ -8,7 +8,7 @@ Yelp uses business attributes — including operating hours — to rank and reco
 
 Built a fully reproducible pipeline from raw JSON to modeling, controlling for business type, region, ratings, and review volume.
 
-> Full write-up available at [portfolio URL]
+> Full write-up available at https://jasminebahremand.my.canva.site/
 
 ---
 
