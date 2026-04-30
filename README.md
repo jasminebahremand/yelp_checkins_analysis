@@ -14,7 +14,7 @@ Built a fully reproducible pipeline from raw JSON to modeling, controlling for b
 
 ## Key Findings
 - **Operating hours had a statistically significant but negligible effect** on check-ins (β=0.0135, p<.001) — not a reliable signal of which businesses attract more visits
-- **Adding controls improved model fit from 0.3% to 12.35%** — business type, region, and review count were far stronger predictors
+- **Adding controls improved model fit from 0.3% to 12.35% (pseudo R²)%** — business type, region, and review count were far stronger predictors
 - **Being a restaurant was a significant predictor** (β=0.1774) — business type matters more than hours
 - **Western region businesses averaged 130.6 check-ins versus 91.6 in the East** — regional differences outweigh the impact of operating hours across all models tested
 
